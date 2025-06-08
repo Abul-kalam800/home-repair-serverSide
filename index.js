@@ -1,12 +1,14 @@
 const express = require('express');
+const cors = require('cors');
 require('dotenv').config()
 const { ServerApiVersion, MongoClient } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 4000;
 
+//midlearwar
+app.use(cors())
+app.use(express.json())
 
-
-console.log(process.env.DB_URI)
 const client = new MongoClient(process.env.DB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -19,6 +21,19 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+     const collectionAllservices = client.db('Home_repair_services').collection("Popular_services")
+
+     // popular services  api
+     app.get('/popular_services',async(req,res)=>{
+      const servicesData = req.body
+      
+      const result = await collectionAllservices.find(servicesData).toArray()
+     
+      res.send(result)
+      
+
+     })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
