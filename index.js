@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { ServerApiVersion, MongoClient } = require('mongodb');
+const { ServerApiVersion, MongoClient, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 4000;
 
@@ -25,14 +25,26 @@ async function run() {
 
      // popular services  api
      app.get('/popular_services',async(req,res)=>{
-      const servicesData = req.body
-      
-      const result = await collectionAllservices.find(servicesData).toArray()
+      const result = await collectionAllservices.find().limit(6).toArray()
      
       res.send(result)
       
-
      })
+     //all services Api
+     app.get('/allservices',async(req,res)=>{
+      const cursor = req.body
+      const result  = await collectionAllservices.find(cursor).toArray()
+      res.send(result)
+     })
+    //  service Details api 
+
+    app.get('/allservices/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await collectionAllservices.findOne(query)
+      res.send(result)
+
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
