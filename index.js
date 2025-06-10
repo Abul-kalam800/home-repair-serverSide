@@ -58,7 +58,21 @@ async function run() {
       res.send(result)
     })
    
-  
+  // update services
+   app.put('/allservices/:id',async(req,res)=>{
+    const id = req.params.id;
+    const filter = {_id: new ObjectId(id)}
+     const options = { upsert: true };
+     const serviceUpdate = req.body;
+     const updateDoc ={
+      $set:serviceUpdate,
+      
+     }
+     console.log(updateDoc)
+     const result = await collectionAllservices.updateOne(filter,updateDoc,options)
+     res.send(result)
+
+   })
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
