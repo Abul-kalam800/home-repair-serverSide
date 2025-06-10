@@ -32,8 +32,13 @@ async function run() {
      })
      //all services Api
      app.get('/allservices',async(req,res)=>{
-      const cursor = req.body
-      const result  = await collectionAllservices.find(cursor).toArray()
+      const email =req.query.email;
+      const query= {};
+      if(email){
+        query.providrEmail = email
+      }
+    
+      const result  = await collectionAllservices.find(query).toArray()
       res.send(result)
      })
     //  service Details api 
@@ -52,7 +57,9 @@ async function run() {
       const result = await collectionAllservices.insertOne(newService)
       res.send(result)
     })
-
+   
+  
+    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
