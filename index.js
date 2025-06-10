@@ -3,7 +3,7 @@ const cors = require('cors');
 require('dotenv').config()
 const { ServerApiVersion, MongoClient, ObjectId } = require('mongodb');
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3000;
 
 //midlearwar
 app.use(cors())
@@ -44,6 +44,13 @@ async function run() {
       const result = await collectionAllservices.findOne(query)
       res.send(result)
 
+    })
+
+    //add services
+    app.post('/allservices',async(req,res)=>{
+      const newService = req.body
+      const result = await collectionAllservices.insertOne(newService)
+      res.send(result)
     })
 
     // Send a ping to confirm a successful connection
