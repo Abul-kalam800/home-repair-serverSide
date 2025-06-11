@@ -22,6 +22,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
      const collectionAllservices = client.db('Home_repair_services').collection("Popular_services")
+     const collectionBooking =  client.db('Home_repair_services').collection("Booking")
 
      // popular services  api
      app.get('/popular_services',async(req,res)=>{
@@ -80,6 +81,13 @@ async function run() {
     const result = await collectionAllservices.deleteOne(query)
     res.send(result)
 
+   })
+
+   // Booking Api
+   app.post('/booking',async(req,res)=>{
+    const bookingData = req.body;
+    const result = await collectionBooking.insertOne(bookingData);
+    res.send(result)
    })
     
     // Send a ping to confirm a successful connection
