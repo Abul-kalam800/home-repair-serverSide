@@ -103,6 +103,33 @@ async function run() {
       res.send(result);
     });
 
+    //my services booking api
+
+    app.get('/myservicesbookings',async(req,res)=>{
+      const provider = req.query.providerEmail;
+      const query ={providerEmail:provider}
+    
+       const result = await collectionBooking.find(query).toArray();
+       res.send(result)
+
+    })
+
+    //status update
+    app.patch('/myservicesbookings/:id',async(req,res)=>{
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id)}
+      const updateDoc={
+        $set:{
+          status:req.body.status
+        } 
+            
+        }
+        const result = await collectionBooking.updateOne(filter,updateDoc)
+        res.send(result)
+
+      
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
