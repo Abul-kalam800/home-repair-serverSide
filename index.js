@@ -105,30 +105,40 @@ async function run() {
 
     //my services booking api
 
-    app.get('/myservicesbookings',async(req,res)=>{
+    app.get("/myservicesbookings", async (req, res) => {
       const provider = req.query.providerEmail;
-      const query ={providerEmail:provider}
-    
-       const result = await collectionBooking.find(query).toArray();
-       res.send(result)
+      const query = { providerEmail: provider };
 
-    })
+      const result = await collectionBooking.find(query).toArray();
+      res.send(result);
+    });
 
     //status update
-    app.patch('/myservicesbookings/:id',async(req,res)=>{
+    app.patch("/myservicesbookings/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id)}
-      const updateDoc={
-        $set:{
-          status:req.body.status
-        } 
-            
-        }
-        const result = await collectionBooking.updateOne(filter,updateDoc)
-        res.send(result)
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: req.body.status,
+        },
+      };
+      const result = await collectionBooking.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    //search api implement
+    app.get("/services", async (req, res) => {
+      const { searchParams } = req.query;
+      console.log(searchParams);
+      let query = {};
+      if (searchParams) {
+        query = {
+          serviceName: { $regex: searchParams, $options: "i" },
+        };
+      }
 
-      
-    })
+      const result = await collectionAllservices.find(query).toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
