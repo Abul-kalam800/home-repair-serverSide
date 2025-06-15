@@ -2,6 +2,11 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { ServerApiVersion, MongoClient, ObjectId } = require("mongodb");
+
+const admin = require("firebase-admin");
+const decoded=Buffer.from(process.env.FB_SERVICE_KEY,'base64').toString('utf8')
+const serviceAccount = JSON.parse(decoded);
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -16,6 +21,43 @@ const client = new MongoClient(process.env.DB_URI, {
     deprecationErrors: true,
   },
 });
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+// token firebase midelware
+const firebaseTokenVerify = async (req, res, next) => {
+  const authHeader = req.headers?.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).send({ message: "UnAuthorization Access" });
+  }
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+    console.log("decoded", decoded);
+    req.decoded = decoded;
+
+    next();
+  } catch (error) {
+    return res.status(401).send({ message: "Unauthorization access" });
+  }
+};
+// token verify email
+const tokenVerifyemail =  (req, res, next) => {
+  if (req.query.email !== req.decoded.email) {
+    return res.status(401).send({ message: "Forbidden access" });
+  }
+  next();
+};
+const tokenVerifyProvidermail = (req,res,next)=>{
+  if(req.query.providerEmail !== req.decoded.email){
+
+  return res.status(401).send({ message: "Forbidden access" });
+  }
+  next();
+};
+
+
 
 async function run() {
   try {
@@ -35,16 +77,22 @@ async function run() {
       res.send(result);
     });
     //all services Api
-    app.get("/allservices", async (req, res) => {
-      const email = req.query.email;
-      const query = {};
-      if (email) {
-        query.providrEmail = email;
-      }
+    app.get(
+      "/allservices",
+      firebaseTokenVerify,
+      tokenVerifyemail,
+      async (req, res) => {
+        const email = req.query.email;
 
-      const result = await collectionAllservices.find(query).toArray();
-      res.send(result);
-    });
+        const query = {};
+        if (email) {
+          query.providrEmail = email;
+        }
+
+        const result = await collectionAllservices.find(query).toArray();
+        res.send(result);
+      }
+    );
     //  service Details api
 
     app.get("/allservices/:id", async (req, res) => {
@@ -93,19 +141,26 @@ async function run() {
       res.send(result);
     });
     //booking service get api
-    app.get("/booking", async (req, res) => {
-      const email = req.query.email;
-      const query = {};
-      if (email) {
-        query.currenUserEmail = email;
+    app.get(
+      "/booking",
+      firebaseTokenVerify,
+        tokenVerifyemail,
+    
+      async (req, res) => {
+        const email = req.query.email;
+        const query = {};
+        if (email) {
+          query.currenUserEmail = email;
+        }
+        const result = await collectionBooking.find(query).toArray();
+        res.send(result);
       }
-      const result = await collectionBooking.find(query).toArray();
-      res.send(result);
-    });
+    );
 
     //my services booking api
 
-    app.get("/myservicesbookings", async (req, res) => {
+    app.get("/myservicesbookings",  firebaseTokenVerify,
+      tokenVerifyProvidermail, async (req, res) => {
       const provider = req.query.providerEmail;
       const query = { providerEmail: provider };
 

@@ -1,2 +1,5 @@
 .env
 node_modules
+firebaseAdminket.json
+keyConvert.js
+.vercel
