@@ -4,7 +4,7 @@ require("dotenv").config();
 const { ServerApiVersion, MongoClient, ObjectId } = require("mongodb");
 
 const admin = require("firebase-admin");
-const decoded=Buffer.from(process.env.FB_SERVICE_KEY,'base64').toString('utf8')
+const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString('utf8');
 const serviceAccount = JSON.parse(decoded);
 
 const app = express();
@@ -43,26 +43,23 @@ const firebaseTokenVerify = async (req, res, next) => {
   }
 };
 // token verify email
-const tokenVerifyemail =  (req, res, next) => {
+const tokenVerifyemail = (req, res, next) => {
   if (req.query.email !== req.decoded.email) {
     return res.status(401).send({ message: "Forbidden access" });
   }
   next();
 };
-const tokenVerifyProvidermail = (req,res,next)=>{
-  if(req.query.providerEmail !== req.decoded.email){
-
-  return res.status(401).send({ message: "Forbidden access" });
+const tokenVerifyProvidermail = (req, res, next) => {
+  if (req.query.providerEmail !== req.decoded.email) {
+    return res.status(401).send({ message: "Forbidden access" });
   }
   next();
 };
 
-
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const collectionAllservices = client
       .db("Home_repair_services")
       .collection("Popular_services");
@@ -144,8 +141,8 @@ async function run() {
     app.get(
       "/booking",
       firebaseTokenVerify,
-        tokenVerifyemail,
-    
+      tokenVerifyemail,
+
       async (req, res) => {
         const email = req.query.email;
         const query = {};
@@ -159,14 +156,18 @@ async function run() {
 
     //my services booking api
 
-    app.get("/myservicesbookings",  firebaseTokenVerify,
-      tokenVerifyProvidermail, async (req, res) => {
-      const provider = req.query.providerEmail;
-      const query = { providerEmail: provider };
+    app.get(
+      "/myservicesbookings",
+      firebaseTokenVerify,
+      tokenVerifyProvidermail,
+      async (req, res) => {
+        const provider = req.query.providerEmail;
+        const query = { providerEmail: provider };
 
-      const result = await collectionBooking.find(query).toArray();
-      res.send(result);
-    });
+        const result = await collectionBooking.find(query).toArray();
+        res.send(result);
+      }
+    );
 
     //status update
     app.patch("/myservicesbookings/:id", async (req, res) => {
@@ -196,10 +197,10 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     //  await client.close();
