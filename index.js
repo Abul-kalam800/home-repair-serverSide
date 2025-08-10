@@ -4,7 +4,9 @@ require("dotenv").config();
 const { ServerApiVersion, MongoClient, ObjectId } = require("mongodb");
 
 const admin = require("firebase-admin");
-const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString('utf8');
+const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString(
+  "utf8"
+);
 const serviceAccount = JSON.parse(decoded);
 
 const app = express();
@@ -66,6 +68,10 @@ async function run() {
     const collectionBooking = client
       .db("Home_repair_services")
       .collection("Booking");
+
+    const collectionSubscriber = client
+      .db("Home_repair_services")
+      .collection("Subscriber");
 
     // popular services  api
     app.get("/popular_services", async (req, res) => {
@@ -194,6 +200,32 @@ async function run() {
 
       const result = await collectionAllservices.find(query).toArray();
       res.send(result);
+    });
+
+    // Post Api for subscribe
+
+    app.post("/subscribe", async (req, res) => {
+      const { email } = req.body;
+
+      
+
+      try {
+        // Check if already subscribed
+        const existing = await collectionSubscriber.findOne({ email });
+        if (existing) {
+          return res.status(400).json({ message: "Email already subscribed,Please Enter new Email" });
+         
+        }
+
+        // Save new subscriber
+        const subscriber = await collectionSubscriber.insertOne({ email });
+        
+        res.status(201).json({ message: "Subscribed successfully!",subscriber });
+
+      } catch (err) {
+        console.error("Subscription Error:", err);
+        res.status(500).json({ message: "Server error" });
+      }
     });
 
     // Send a ping to confirm a successful connection
